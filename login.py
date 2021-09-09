@@ -12,7 +12,47 @@ import random
 
 import requests
 
-postData:dict = {
+
+def dbg(n):
+    print(n)
+    exit(2)
+
+
+#Log
+def log(content,is_error:bool):
+    with open("./log.txt","a+") as f:
+        if is_error:
+            f.writelines("**[{0}] ERROR: {1}\n".format(time.asctime(),content))
+        else:
+            f.writelines("[{0}] {1}\n".format(time.asctime(),content))
+
+#You can customize this function for your email.
+def sendmail(content,mail):
+    """
+    @param content Content to be sent
+    @mail Mail address in "stuinfo"
+    """
+    with open('./sender_email','r+') as f:
+        sender_info=json.load(fp=f)
+        msg_from=sender_info["email"]                                 #Mailbox of sender
+        passwd=sender_info["code"]                                      #Authentication code
+    msg_to=mail                                                    #Mailbox of receiver                        
+    subject="From:Hinux's Bot"                                     #Subject          　　                                          
+    msg = MIMEText(content)                                        #Use the MIMEText to convert the content into correct form
+    msg['Subject'] = subject
+    msg['From'] = msg_from
+    msg['To'] = msg_to
+    try:
+        s = smtplib.SMTP_SSL("smtp.qq.com",465)
+        s.login(msg_from, passwd)
+        s.sendmail(msg_from, msg_to, msg.as_string())
+        #log("Mail has been sent",False)
+        s.quit()
+    except Exception as e:
+        log(str(e),True)
+
+if __name__ == "__main__":
+    postData:dict = {
     "mainTable": {
         "passAreaC2": "",
         "passAreaC3": "",
@@ -62,46 +102,6 @@ postData:dict = {
     },
     "jnuid": ""
 }
-
-def dbg(n):
-    print(n)
-    exit(2)
-
-
-#Log
-def log(content,is_error:bool):
-    with open("./log.txt","a+") as f:
-        if is_error:
-            f.writelines("**[{0}] ERROR: {1}\n".format(time.asctime(),content))
-        else:
-            f.writelines("[{0}] {1}\n".format(time.asctime(),content))
-
-#You can customize this function for your email.
-def sendmail(content,mail):
-    """
-    @param content Content to be sent
-    @mail Mail address in "stuinfo"
-    """
-    with open('./sender_email','r+') as f:
-        sender_info=json.load(fp=f)
-        msg_from=sender_info["email"]                                 #Mailbox of sender
-        passwd=sender_info["code"]                                      #Authentication code
-    msg_to=mail                                                    #Mailbox of receiver                        
-    subject="From:Hinux's Bot"                                     #Subject          　　                                          
-    msg = MIMEText(content)                                        #Use the MIMEText to convert the content into correct form
-    msg['Subject'] = subject
-    msg['From'] = msg_from
-    msg['To'] = msg_to
-    try:
-        s = smtplib.SMTP_SSL("smtp.qq.com",465)
-        s.login(msg_from, passwd)
-        s.sendmail(msg_from, msg_to, msg.as_string())
-        #log("Mail has been sent",False)
-        s.quit()
-    except Exception as e:
-        log(str(e),True)
-
-if __name__ == "__main__":
     mail_pot={}
     stu=Session()
     stuinfo={}
@@ -112,7 +112,6 @@ if __name__ == "__main__":
         'Referer':'https://stuhealth.jnu.edu.cn/',
         'Content-Type':'application/json'
     }
-    postData={}
 
     try:
         with open("./mails","r+") as mails:
@@ -122,7 +121,7 @@ if __name__ == "__main__":
 
     for m in range(0,len(mail_pot[0])):      #m stands for index of each element
         try:
-            
+                
             with open("./stuinfo","r+") as f:
                 stuinfo=json.load(f)
 
@@ -145,6 +144,7 @@ if __name__ == "__main__":
             if "status" in reviewInfo:
                 if reviewInfo["status"] != 200:
                     sendmail(reviewInfo,"1624339284@qq.com")
+                    continue
             for k in postData:
                 for sub in postData[k]:
                     if k != "jnuid":
@@ -155,7 +155,7 @@ if __name__ == "__main__":
             if login.json()['meta']['msg']=='登录成功，今天已填写':
                 print(f"{stuinfo[m]['username']}:登陆成功，今天已经填写")
                 
-                sendmail("Hey!User{0} Here is **[{1}]\n{2}".format(stuinfo[m]['username'],time.asctime(),login.json()['meta']['msg']),mail_pot[0][stuinfo[m]['username']])
+                sendmail(f"Hey!User{stuinfo[m]['username']} \n{login.json()}",mail_pot[0][stuinfo[m]['username']])
                 #log(login.json()['meta']['msg'],False)
 
             if login.json()['meta']['msg']=='登录成功，今天未填写':
@@ -180,7 +180,7 @@ if __name__ == "__main__":
                     fill=stu.post(url="https://stuhealth.jnu.edu.cn/api/write/main",json=postData,headers=headers)
                     print(fill.json())
                     #print(f"{stuinfo[m]['username']}:{fill.json()['meta']['msg']}")
-                    #sendmail(f"Good morning!{stuinfo[m]['username']} **[{time.asctime()}]\n{fill.json()}",mail_pot[0][stuinfo[m]['username']])
+                    sendmail(f"Good morning!{stuinfo[m]['username']} \n{fill.json()}",mail_pot[0][stuinfo[m]['username']])
                     #log(fill.json()['meta']['msg'],False)
                     time.sleep(random.random()*10)
 

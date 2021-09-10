@@ -117,7 +117,7 @@ if __name__ == "__main__":
         with open("./mails","r+") as mails:
             mail_pot=json.load(mails)
     except Exception as e:
-        sendmail("**[{0}] ERROR!!\n{1}".format(time.asctime(),str(e)),"1624339284@qq.com")
+        sendmail("**[{0}] ERROR!!\n{1}".format(time.asctime(),str(e)),"your@email.com")
 
     for m in range(0,len(mail_pot[0])):      #m stands for index of each element
         try:
@@ -135,7 +135,7 @@ if __name__ == "__main__":
             stucheckinUrl = "https://stuhealth.jnu.edu.cn/api/user/stucheckin"
             checkinInfo = stu.post(url=stucheckinUrl,json={'jnuid':jnuid},headers=headers).json()
             if checkinInfo['meta']['msg'] != "获取学生打卡记录成功":
-                sendmail(f"URL:{stucheckinUrl},Response:{checkinInfo['meta']}","1624339284@qq.com")
+                sendmail(f"URL:{stucheckinUrl},Response:{checkinInfo['meta']}","your@email.com")
             id = checkinInfo['data']['checkinInfo'][0]['id']
             previousId = checkinInfo['data']['checkinInfo'][1]['id']
             print(f"id:{id},previousId:{previousId}")
@@ -143,7 +143,7 @@ if __name__ == "__main__":
             reviewInfo = stu.post(url = reviewUrl, json={"id":previousId,"jnuid":jnuid},headers=headers).json()
             if "status" in reviewInfo:
                 if reviewInfo["status"] != 200:
-                    sendmail(reviewInfo,"1624339284@qq.com")
+                    sendmail(reviewInfo,"your@email.com")
                     continue
             for k in postData:
                 for sub in postData[k]:
@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
         except Exception as e:
             #log(str(e),True)
-            sendmail("{0}**[{1}] ERROR!!\n{2}".format(stuinfo[m]['username'],time.asctime(),str(e)),"1624339284@qq.com")
+            sendmail("{0}**[{1}] ERROR!!\n{2}".format(stuinfo[m]['username'],time.asctime(),str(e)),"your@email.com")
             continue
     
     stu.close()

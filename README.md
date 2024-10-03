@@ -1,5 +1,5 @@
 # a_211_autoCheckIn  
-A hand-free solution for automatic check-in on the Stuent Health System  
+A hand-free solution for automatic check-in on the Student Health System  
 
 # Prerequisites  
 Python3.x is required to be installed on your device  
